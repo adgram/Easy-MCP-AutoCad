@@ -33,6 +33,5 @@ __pycache__
 *.db
 *~
 .gitignore
-test/
 * - 副本*
 .pytest_cache/
