@@ -51,7 +51,7 @@ def create_new_drawing(ctx: Context, template: Optional[str] = None) -> str:
     """创建新的 AutoCAD 图纸"""
     try:
         # 尝试连接到 AutoCAD
-        acad = win32com.client.Dispatch("AutoCAD.Application")
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
         acad.Visible = True
         
         # 创建新文档
@@ -76,7 +76,7 @@ def draw_line(ctx: Context, start_x: float, start_y: float, end_x: float, end_y:
         layer: 可选的图层名称
     """
     try:
-        acad = win32com.client.Dispatch("AutoCAD.Application")
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
         if acad.Documents.Count == 0:
             return "无打开的文档，请先创建或打开一个图纸"
         
@@ -130,7 +130,7 @@ def draw_circle(ctx: Context, center_x: float, center_y: float, radius: float, l
         layer: 可选的图层名称
     """
     try:
-        acad = win32com.client.Dispatch("AutoCAD.Application")
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
         if acad.Documents.Count == 0:
             return "无打开的文档，请先创建或打开一个图纸"
         
@@ -177,7 +177,7 @@ def draw_circle(ctx: Context, center_x: float, center_y: float, radius: float, l
 def scan_all_entities(ctx: Context) -> str:
     """扫描当前图纸中的所有实体并保存到数据库"""
     try:
-        acad = win32com.client.Dispatch("AutoCAD.Application")
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
         if acad.Documents.Count == 0:
             return "无打开的文档，请先创建或打开一个图纸"
         
@@ -255,7 +255,7 @@ def highlight_entity(ctx: Context, handle: str, color: int = 1) -> str:
         color: 高亮颜色码（1=红色, 2=黄色, 3=绿色, 4=青色, 5=蓝色, 6=洋红色）
     """
     try:
-        acad = win32com.client.Dispatch("AutoCAD.Application")
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
         if acad.Documents.Count == 0:
             return "无打开的文档，请先创建或打开一个图纸"
         
@@ -284,7 +284,7 @@ def count_text_patterns(ctx: Context, pattern: str = "PMC-3M") -> str:
         pattern: 要搜索的文本模式，默认为"PMC-3M"
     """
     try:
-        acad = win32com.client.Dispatch("AutoCAD.Application")
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
         if acad.Documents.Count == 0:
             return "无打开的文档，请先创建或打开一个图纸"
         
@@ -355,7 +355,7 @@ def highlight_text_matches(ctx: Context, pattern: str = "PMC-3M", color: int = 1
         color: 高亮颜色码（1=红色, 2=黄色, 3=绿色, 4=青色, 5=蓝色, 6=洋红色）
     """
     try:
-        acad = win32com.client.Dispatch("AutoCAD.Application")
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
         if acad.Documents.Count == 0:
             return "无打开的文档，请先创建或打开一个图纸"
         
@@ -516,7 +516,7 @@ def query_and_highlight(ctx: Context, sql_query: str, highlight_color: int = 1) 
         handles = [row[handle_index] for row in rows]
         
         # 高亮实体
-        acad = win32com.client.Dispatch("AutoCAD.Application")
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
         if acad.Documents.Count == 0:
             return "无打开的文档，请先创建或打开一个图纸"
         
@@ -561,45 +561,6 @@ def query_and_highlight(ctx: Context, sql_query: str, highlight_color: int = 1) 
             return f"未能高亮任何实体"
     except Exception as e:
         return f"查询并高亮失败: {str(e)}"
-# 添加到现有代码中
-
-@mcp.tool()
-@mcp.tool()
-def draw_line(ctx: Context, start_x: float, start_y: float, end_x: float, end_y: float, layer: Optional[str] = None) -> str:
-    """在AutoCAD中绘制直线"""
-    try:
-        acad = win32com.client.Dispatch("AutoCAD.Application")
-        if acad.Documents.Count == 0:
-            return "无打开的文档，请先创建或打开一个图纸"
-        
-        doc = acad.ActiveDocument
-        model_space = doc.ModelSpace
-        
-        # 处理图层...
-        
-        # 创建直线
-        line = model_space.AddLine(
-            win32com.client.VARIANT(win32com.client.pythoncom.VT_ARRAY | win32com.client.pythoncom.VT_R8, [start_x, start_y, 0]),
-            win32com.client.VARIANT(win32com.client.pythoncom.VT_ARRAY | win32com.client.pythoncom.VT_R8, [end_x, end_y, 0])
-        )
-        
-        # 将线条信息存入数据库（不使用handle字段）
-        conn = sqlite3.connect("autocad_data.db")
-        cursor = conn.cursor()
-        props = {
-            "start_point": [start_x, start_y, 0],
-            "end_point": [end_x, end_y, 0]
-        }
-        cursor.execute(
-            "INSERT INTO cad_elements (name, type, layer, properties) VALUES (?, ?, ?, ?)",
-            ("Line", "AcDbLine", doc.ActiveLayer.Name, json.dumps(props))
-        )
-        conn.commit()
-        conn.close()
-        
-        return f"已创建直线，从 ({start_x}, {start_y}) 到 ({end_x}, {end_y})"
-    except Exception as e:
-        return f"创建直线失败: {str(e)}"
 
 @mcp.tool()
 def draw_polyline(ctx: Context, points: List[float], closed: bool = False, layer: Optional[str] = None) -> str:
@@ -611,7 +572,7 @@ def draw_polyline(ctx: Context, points: List[float], closed: bool = False, layer
         layer: 图层名称
     """
     try:
-        acad = win32com.client.Dispatch("AutoCAD.Application")
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
         if acad.Documents.Count == 0:
             return "无打开的文档"
             
@@ -663,7 +624,7 @@ def draw_text(ctx: Context, text_string: str, insert_x: float, insert_y: float, 
         layer: 图层名称
     """
     try:
-        acad = win32com.client.Dispatch("AutoCAD.Application")
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
         if acad.Documents.Count == 0:
             return "无打开的文档"
             
@@ -698,7 +659,7 @@ def create_layer(ctx: Context, name: str, color_index: int = 7) -> str:
         color_index: 颜色索引 (1-255)
     """
     try:
-        acad = win32com.client.Dispatch("AutoCAD.Application")
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
         doc = acad.ActiveDocument
         
         try:
@@ -725,7 +686,7 @@ def draw_device_connection(ctx: Context, start_device: str, end_device: str, sta
         layer: 可选的图层名称
     """
     try:
-        acad = win32com.client.Dispatch("AutoCAD.Application")
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
         if acad.Documents.Count == 0:
             return "无打开的文档，请先创建或打开一个图纸"
         
@@ -814,7 +775,7 @@ def move_entity(ctx: Context, handle: str, start_point: List[float], end_point: 
         end_point: 目标点 [x, y, z]
     """
     try:
-        acad = win32com.client.Dispatch("AutoCAD.Application")
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
         doc = acad.ActiveDocument
         
         try:
@@ -840,7 +801,7 @@ def rotate_entity(ctx: Context, handle: str, base_point: List[float], angle: flo
         angle: 旋转角度（度）
     """
     try:
-        acad = win32com.client.Dispatch("AutoCAD.Application")
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
         doc = acad.ActiveDocument
         
         try:
@@ -868,7 +829,7 @@ def copy_entity(ctx: Context, handle: str, start_point: List[float], end_point: 
         end_point: 目标点 [x, y, z]
     """
     try:
-        acad = win32com.client.Dispatch("AutoCAD.Application")
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
         doc = acad.ActiveDocument
         
         try:
@@ -886,6 +847,602 @@ def copy_entity(ctx: Context, handle: str, start_point: List[float], end_point: 
         return f"已复制实体，新Handle: {new_entity.Handle}"
     except Exception as e:
         return f"复制实体失败: {str(e)}"
+
+@mcp.tool()
+def execute_command(ctx: Context, command: str) -> str:
+    """在AutoCAD中执行命令（如 LINE, CIRCLE, ERASE, TRIM 等）并获取命令行输出
+    
+    Args:
+        command: AutoCAD命令字符串（如 "LINE 0,0 100,100 ", "CIRCLE 50,50 30", "ERASE ALL "），注意命令结束后需要加空格或回车
+    """
+    import time, os, locale
+    acad = win32com.client.Dispatch("AutoCAD.Application.25")
+    if acad.Documents.Count == 0:
+        return "无打开的文档"
+    
+    doc = acad.ActiveDocument
+
+    # 等待之前的命令完成
+    for _ in range(300):
+        try:
+            if doc.GetVariable("CMDACTIVE") == 0:
+                break
+        except:
+            pass
+        time.sleep(0.1)
+
+    # 启用日志文件捕获完整输出
+    log_path = None
+    logfile_was = None
+    log_content_before = ""
+    try:
+        logfile_was = doc.GetVariable("LOGFILEMODE")
+        doc.SetVariable("LOGFILEMODE", 1)
+        time.sleep(0.5)
+        log_path = str(doc.GetVariable("LOGFILENAME"))
+        if os.path.exists(log_path):
+            for enc in [locale.getpreferredencoding(), "gbk", "gb2312", "utf-8"]:
+                try:
+                    with open(log_path, "r", encoding=enc) as f:
+                        log_content_before = f.read()
+                    break
+                except:
+                    continue
+    except:
+        pass
+
+    # 发送命令
+    cmd = command.strip()
+    if not cmd.endswith("\n"):
+        cmd += "\n"
+    doc.SendCommand(cmd)
+
+    # 等待命令完成
+    for _ in range(300):
+        try:
+            if doc.GetVariable("CMDACTIVE") == 0:
+                break
+        except:
+            pass
+        time.sleep(0.1)
+    time.sleep(0.5)
+
+    # 从日志文件读取新增内容（全文对比）
+    output_lines = []
+    if log_path and os.path.exists(log_path):
+        try:
+            log_content_after = None
+            for enc in [locale.getpreferredencoding(), "gbk", "gb2312", "utf-8"]:
+                try:
+                    with open(log_path, "r", encoding=enc) as f:
+                        log_content_after = f.read()
+                    break
+                except:
+                    continue
+            if log_content_after is not None:
+                new_part = log_content_after[len(log_content_before):].strip()
+                if new_part:
+                    for line in new_part.split("\n"):
+                        s = line.strip()
+                        if s:
+                            output_lines.append(s)
+        except:
+            pass
+
+    # 恢复日志设置
+    if logfile_was is not None:
+        try:
+            doc.SetVariable("LOGFILEMODE", logfile_was)
+        except:
+            pass
+
+    result_parts = [f"命令: {command}"]
+    if output_lines:
+        result_parts.append("输出:")
+        for line in output_lines[-30:]:
+            result_parts.append(f"  {line}")
+    else:
+        result_parts.append("输出: (命令未产生文本输出)")
+    return "\n".join(result_parts)
+
+@mcp.tool()
+def create_block(ctx: Context, name: str, handles: List[str], base_point: Optional[List[float]] = None, insert: bool = True) -> str:
+    """创建图块定义，从指定实体生成块，可选择是否插入块参照
+    
+    Args:
+        name: 块名称
+        handles: 要纳入块的实体 handle 列表，如 ["377", "378", "379"]
+        base_point: 块基点 [x, y, z]，默认 [0,0,0]
+        insert: 是否在创建后插入块参照，默认 True
+    """
+    import time, os, locale, json
+    acad = win32com.client.Dispatch("AutoCAD.Application.25")
+    if acad.Documents.Count == 0:
+        return json.dumps({"success": False, "error": "无打开的文档", "data": None}, ensure_ascii=False)
+
+    doc = acad.ActiveDocument
+    bp = base_point or [0.0, 0.0, 0.0]
+    if len(bp) < 3:
+        bp = [bp[0], bp[1], 0.0]
+
+    for _ in range(300):
+        try:
+            if doc.GetVariable("CMDACTIVE") == 0:
+                break
+        except:
+            pass
+        time.sleep(0.1)
+
+    # 构建 LISP：遍历 handle，用 entmake 复制到块定义
+    handle_list = " ".join(f'"{h}"' for h in handles)
+    lisp_code = f"""
+(progn
+  (setq _name "{name}")
+  (setq _bp (list {bp[0]} {bp[1]} {bp[2]}))
+  (setq _handles (list {handle_list}))
+  
+  ;; 检查块名是否已存在
+  (if (tblsearch "BLOCK" _name)
+    (setvar "USERS1" (strcat "块 \\"" _name "\\" 已存在"))
+    (progn
+      ;; 开始块定义
+      (entmake (list (cons 0 "BLOCK") (cons 2 _name) (cons 70 2) (cons 10 _bp)))
+      
+      ;; 遍历 handle，将实体 DXF 数据复制到块中
+      (foreach _h _handles
+        (setq _ent (handent _h))
+        (if _ent
+          (progn
+            (setq _ed (entget _ent))
+            ;; 移除 handle、所有者等内部字段（保留图层、颜色等显示属性）
+            (foreach _x '(-1 5 330 360 -2)
+              (setq _ed (vl-remove (assoc _x _ed) _ed))
+            )
+            (entmake _ed)
+          )
+        )
+      )
+      
+      ;; 结束块定义
+      (entmake (list (cons 0 "ENDBLK")))
+      
+      ;; 插入块参照
+      {f'(entmake (list (cons 0 "INSERT") (cons 2 "{name}") (cons 10 (list {bp[0]} {bp[1]} {bp[2]}))))' if insert else 'nil'}
+      
+      (setvar "USERS1" (strcat "块 \\"" _name "\\" 已创建，包含 " (itoa (length _handles)) " 个实体"))
+    )
+  )
+)
+""".strip()
+
+    # 执行 LISP
+    log_path = None
+    logfile_was = None
+    log_content_before = ""
+    try:
+        logfile_was = doc.GetVariable("LOGFILEMODE")
+        doc.SetVariable("LOGFILEMODE", 1)
+        time.sleep(0.5)
+        log_path = str(doc.GetVariable("LOGFILENAME"))
+        if os.path.exists(log_path):
+            for enc in [locale.getpreferredencoding(), "gbk", "gb2312", "utf-8"]:
+                try:
+                    with open(log_path, "r", encoding=enc) as f:
+                        log_content_before = f.read()
+                    break
+                except:
+                    continue
+    except:
+        pass
+
+    wrapped = f'(progn (setvar "USERS1" (vl-princ-to-string (progn {lisp_code}))))\n'
+    doc.SendCommand(wrapped)
+
+    for _ in range(300):
+        try:
+            if doc.GetVariable("CMDACTIVE") == 0:
+                break
+        except:
+            pass
+        time.sleep(0.1)
+    time.sleep(0.3)
+
+    result = ""
+    try:
+        result = str(doc.GetVariable("USERS1"))
+    except:
+        pass
+
+    output_lines = []
+    if log_path and os.path.exists(log_path):
+        try:
+            log_content_after = None
+            for enc in [locale.getpreferredencoding(), "gbk", "gb2312", "utf-8"]:
+                try:
+                    with open(log_path, "r", encoding=enc) as f:
+                        log_content_after = f.read()
+                    break
+                except:
+                    continue
+            if log_content_after is not None:
+                new_part = log_content_after[len(log_content_before):].strip()
+                if new_part:
+                    for line in new_part.split("\n"):
+                        s = line.strip()
+                        if s:
+                            output_lines.append(s)
+        except:
+            pass
+
+    if logfile_was is not None:
+        try:
+            doc.SetVariable("LOGFILEMODE", logfile_was)
+        except:
+            pass
+
+    return json.dumps({
+        "success": True,
+        "error": None,
+        "data": {
+            "name": name,
+            "handles": handles,
+            "base_point": bp,
+            "message": result or "块已创建",
+        }
+    }, ensure_ascii=False)
+
+@mcp.tool()
+def autocad_select_objects(ctx: Context, filter_list: Optional[str] = None, mode: str = "X", points: Optional[List[float]] = None) -> str:
+    """在AutoCAD中通过ssget选择对象，支持多种模式和过滤条件，返回handle列表（自动避免交互弹窗）
+    
+    Args:
+        filter_list: 可选的过滤条件，LISP关联列表格式，如 '((0 . "LINE")(8 . "0"))'，不传则选择所有
+        mode: 选择模式 — "X"=全部(默认), "A"=当前空间全部, "L"=最后创建的, "P"=前一个选集, "I"=当前pickfirst, "C"=窗交(points需4个坐标), "W"=窗选, "F"=栏选, "CP"/ "WP"=多边形
+        points: 坐标列表，用于"C"/"W"/"F"/"CP"/"WP"模式，eg [x1,y1,x2,y2,...]
+    """
+    import time, os, locale
+    acad = win32com.client.Dispatch("AutoCAD.Application.25")
+    if acad.Documents.Count == 0:
+        return "无打开的文档"
+
+    doc = acad.ActiveDocument
+
+    for _ in range(300):
+        try:
+            if doc.GetVariable("CMDACTIVE") == 0:
+                break
+        except:
+            pass
+        time.sleep(0.1)
+
+    # 构建 ssget 调用
+    mode_upper = (mode or "X").upper()
+    
+    # 无交互模式：不需要用户操作
+    no_pick_modes = {"X", "A", "L", "P", "I"}
+    
+    if mode_upper in no_pick_modes:
+        ss_args = f'"{mode_upper}"'
+    elif mode_upper in ("C", "W"):
+        if not points or len(points) < 4:
+            return f"模式{mode}需要至少4个坐标(两个点)，传入: {points}"
+        ss_args = f'"{mode_upper}" \'({points[0]} {points[1]} 0) \'({points[2]} {points[3]} 0)'
+    elif mode_upper in ("F", "CP", "WP"):
+        if not points or len(points) < 2 or len(points) % 2 != 0:
+            return f"模式{mode}需要至少2个坐标(偶数个)，传入: {points}"
+        pt_list = " ".join(f'({points[i]} {points[i+1]} 0)' for i in range(0, len(points), 2))
+        ss_args = f'"{mode_upper}" \'({pt_list})'
+    else:
+        no_pick_modes.add("X")
+        mode_upper = "X"
+        ss_args = '"X"'
+
+    if filter_list:
+        filter_str = filter_list.strip()
+        if filter_str.startswith("'"):
+            filter_str = filter_str[1:]
+        ss_lisp = f'(ssget {ss_args} \'{filter_str})'
+    else:
+        ss_lisp = f'(ssget {ss_args})'
+
+    # 构建完整的 LISP：提取 handle 列表
+    lisp_code = f"""
+(progn
+  (setq _ss {ss_lisp})
+  (setq _handles '())
+  (if _ss
+    (repeat (setq _i (sslength _ss))
+      (setq _handles (cons (cdr (assoc 5 (entget (ssname _ss (setq _i (1- _i)))))) _handles))
+    )
+  )
+  (setvar "USERS1" (vl-princ-to-string _handles))
+)
+""".strip()
+
+    # 执行 LISP（复用 eval_lisp 逻辑）
+    log_path = None
+    logfile_was = None
+    log_content_before = ""
+    try:
+        logfile_was = doc.GetVariable("LOGFILEMODE")
+        doc.SetVariable("LOGFILEMODE", 1)
+        time.sleep(0.5)
+        log_path = str(doc.GetVariable("LOGFILENAME"))
+        if os.path.exists(log_path):
+            for enc in [locale.getpreferredencoding(), "gbk", "gb2312", "utf-8"]:
+                try:
+                    with open(log_path, "r", encoding=enc) as f:
+                        log_content_before = f.read()
+                    break
+                except:
+                    continue
+    except:
+        pass
+
+    wrapped = f'(progn (setvar "USERS1" (vl-princ-to-string (progn {lisp_code}))))\n'
+    doc.SendCommand(wrapped)
+
+    for _ in range(300):
+        try:
+            if doc.GetVariable("CMDACTIVE") == 0:
+                break
+        except:
+            pass
+        time.sleep(0.1)
+    time.sleep(0.3)
+
+    result = ""
+    try:
+        result = str(doc.GetVariable("USERS1"))
+    except:
+        pass
+
+    output_lines = []
+    if log_path and os.path.exists(log_path):
+        try:
+            log_content_after = None
+            for enc in [locale.getpreferredencoding(), "gbk", "gb2312", "utf-8"]:
+                try:
+                    with open(log_path, "r", encoding=enc) as f:
+                        log_content_after = f.read()
+                    break
+                except:
+                    continue
+            if log_content_after is not None:
+                new_part = log_content_after[len(log_content_before):].strip()
+                if new_part:
+                    for line in new_part.split("\n"):
+                        s = line.strip()
+                        if s:
+                            output_lines.append(s)
+        except:
+            pass
+
+    if logfile_was is not None:
+        try:
+            doc.SetVariable("LOGFILEMODE", logfile_was)
+        except:
+            pass
+
+    parts = [f"模式: {mode_upper}", f"过滤: {filter_list or '(全部)'}"]
+    if result:
+        parts.append(f"结果: {result}")
+    if output_lines:
+        parts.append("交互输出:")
+        for line in output_lines[-10:]:
+            parts.append(f"  {line}")
+    if not result and not output_lines:
+        parts.append("(无结果)")
+    return "\n".join(parts)
+
+@mcp.tool()
+def autocad_get_layers(ctx: Context) -> str:
+    """获取图纸中所有图层信息（名称、颜色、状态等）"""
+    import json
+    try:
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
+        if acad.Documents.Count == 0:
+            return json.dumps({"success": False, "error": "无打开的文档", "data": None}, ensure_ascii=False)
+        doc = acad.ActiveDocument
+        layers = []
+        for i in range(doc.Layers.Count):
+            lay = doc.Layers.Item(i)
+            layers.append({
+                "name": lay.Name,
+                "color": lay.Color,
+                "linetype": lay.Linetype,
+                "on": lay.LayerOn,
+                "frozen": lay.Freeze,
+                "locked": lay.Lock,
+            })
+        return json.dumps({"success": True, "error": None, "data": layers}, ensure_ascii=False)
+    except Exception as e:
+        return json.dumps({"success": False, "error": str(e), "data": None}, ensure_ascii=False)
+
+@mcp.tool()
+def autocad_get_blocks(ctx: Context) -> str:
+    """获取图纸中所有块定义信息（名称、数量等）"""
+    import json
+    try:
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
+        if acad.Documents.Count == 0:
+            return json.dumps({"success": False, "error": "无打开的文档", "data": None}, ensure_ascii=False)
+        doc = acad.ActiveDocument
+        blocks = []
+        for i in range(doc.Blocks.Count):
+            blk = doc.Blocks.Item(i)
+            blocks.append({
+                "name": blk.Name,
+                "count": blk.Count,
+                "origin": [blk.Origin[0], blk.Origin[1], blk.Origin[2]] if hasattr(blk, "Origin") else None,
+            })
+        return json.dumps({"success": True, "error": None, "data": blocks}, ensure_ascii=False)
+    except Exception as e:
+        return json.dumps({"success": False, "error": str(e), "data": None}, ensure_ascii=False)
+
+@mcp.tool()
+def autocad_get_linetypes(ctx: Context) -> str:
+    """获取图纸中所有线型信息"""
+    import json
+    try:
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
+        if acad.Documents.Count == 0:
+            return json.dumps({"success": False, "error": "无打开的文档", "data": None}, ensure_ascii=False)
+        doc = acad.ActiveDocument
+        linetypes = []
+        for i in range(doc.Linetypes.Count):
+            lt = doc.Linetypes.Item(i)
+            linetypes.append({
+                "name": lt.Name,
+                "description": lt.Description if hasattr(lt, "Description") else "",
+            })
+        return json.dumps({"success": True, "error": None, "data": linetypes}, ensure_ascii=False)
+    except Exception as e:
+        return json.dumps({"success": False, "error": str(e), "data": None}, ensure_ascii=False)
+
+@mcp.tool()
+def autocad_get_sysvar(ctx: Context, name: str) -> str:
+    """读取AutoCAD系统变量
+    
+    Args:
+        name: 系统变量名，如 "CMDACTIVE"、"DWGNAME"、"LASTPROMPT"
+    """
+    import json
+    try:
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
+        if acad.Documents.Count == 0:
+            return json.dumps({"success": False, "error": "无打开的文档", "data": None}, ensure_ascii=False)
+        doc = acad.ActiveDocument
+        value = doc.GetVariable(name)
+        return json.dumps({"success": True, "error": None, "data": str(value)}, ensure_ascii=False)
+    except Exception as e:
+        return json.dumps({"success": False, "error": str(e), "data": None}, ensure_ascii=False)
+
+@mcp.tool()
+def autocad_set_sysvar(ctx: Context, name: str, value: Any) -> str:
+    """设置AutoCAD系统变量
+    
+    Args:
+        name: 系统变量名，如 "CMDECHO"、"LOGFILEMODE"
+        value: 值（整数、浮点数或字符串）
+    """
+    import json
+    try:
+        acad = win32com.client.Dispatch("AutoCAD.Application.25")
+        if acad.Documents.Count == 0:
+            return json.dumps({"success": False, "error": "无打开的文档", "data": None}, ensure_ascii=False)
+        doc = acad.ActiveDocument
+        doc.SetVariable(name, value)
+        return json.dumps({"success": True, "error": None, "data": f"{name} = {value}"}, ensure_ascii=False)
+    except Exception as e:
+        return json.dumps({"success": False, "error": str(e), "data": None}, ensure_ascii=False)
+
+@mcp.tool()
+def autocad_eval_lisp(ctx: Context, lisp_code: str) -> str:
+    """在AutoCAD中执行LISP代码，原子化执行（解决entsel/getpoint在while循环中代码泄漏问题），返回完整结果
+    
+    Args:
+        lisp_code: LISP表达式，如 '(setq a (+ 1 2))' 或带 entsel 的循环
+    """
+    import time, os, locale
+    acad = win32com.client.Dispatch("AutoCAD.Application.25")
+    if acad.Documents.Count == 0:
+        return "无打开的文档"
+
+    doc = acad.ActiveDocument
+
+    # 等待之前的命令完成
+    for _ in range(300):
+        try:
+            if doc.GetVariable("CMDACTIVE") == 0:
+                break
+        except:
+            pass
+        time.sleep(0.1)
+
+    # 启用日志文件捕获完整交互输出
+    log_path = None
+    logfile_was = None
+    log_content_before = ""
+    try:
+        logfile_was = doc.GetVariable("LOGFILEMODE")
+        doc.SetVariable("LOGFILEMODE", 1)
+        time.sleep(0.5)
+        log_path = str(doc.GetVariable("LOGFILENAME"))
+        if os.path.exists(log_path):
+            for enc in [locale.getpreferredencoding(), "gbk", "gb2312", "utf-8"]:
+                try:
+                    with open(log_path, "r", encoding=enc) as f:
+                        log_content_before = f.read()
+                    break
+                except:
+                    continue
+    except:
+        pass
+
+    # 用 (progn ...) 原子化包裹代码，结果存入 USERS1
+    # 使用 vl-princ-to-string 转换任意 LISP 类型为字符串
+    wrapped = f'(progn (setvar "USERS1" (vl-princ-to-string (progn {lisp_code}))))\n'
+
+    doc.SendCommand(wrapped)
+
+    # 等待命令完成（交互式命令如 entsel 需要用户操作，使用更长超时）
+    for _ in range(3000):
+        try:
+            if doc.GetVariable("CMDACTIVE") == 0:
+                break
+        except:
+            pass
+        time.sleep(0.1)
+
+    # 从日志文件读取新增内容
+    output_lines = []
+    if log_path and os.path.exists(log_path):
+        try:
+            log_content_after = None
+            for enc in [locale.getpreferredencoding(), "gbk", "gb2312", "utf-8"]:
+                try:
+                    with open(log_path, "r", encoding=enc) as f:
+                        log_content_after = f.read()
+                    break
+                except:
+                    continue
+            if log_content_after is not None:
+                new_part = log_content_after[len(log_content_before):].strip()
+                if new_part:
+                    for line in new_part.split("\n"):
+                        s = line.strip()
+                        if s:
+                            output_lines.append(s)
+        except:
+            pass
+
+    # 恢复日志设置
+    if logfile_was is not None:
+        try:
+            doc.SetVariable("LOGFILEMODE", logfile_was)
+        except:
+            pass
+
+    # 读取 USERS1 中的返回结果
+    result = ""
+    try:
+        result = str(doc.GetVariable("USERS1"))
+    except:
+        pass
+
+    # 构建返回
+    parts = [f"LISP: {lisp_code}"]
+    if result:
+        parts.append(f"结果: {result}")
+    if output_lines:
+        parts.append("交互输出:")
+        for line in output_lines[-30:]:
+            parts.append(f"  {line}")
+    if not result and not output_lines:
+        parts.append("(无返回值)")
+    return "\n".join(parts)
+
 # 启动服务器
 if __name__ == "__main__":
     mcp.run()
