@@ -1,6 +1,5 @@
 @echo off
 REM AutoCAD MCP Server Launcher
-REM This script launches the AutoCAD MCP Server
+REM Run as a module so relative imports in tools/ work
 
-cd /d "%~dp0"
-python "[.\Lib\site-packages]\easy_mcp_autocad\server.py" %*
+python -m easy_mcp_autocad.server %*

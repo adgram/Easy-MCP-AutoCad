@@ -1,5 +1,5 @@
 from mcp.server.fastmcp import FastMCP
-from tools.database import init_db
+from .tools.database import init_db
 
 mcp = FastMCP("AutoCAD-DB-Server")
 init_db()
