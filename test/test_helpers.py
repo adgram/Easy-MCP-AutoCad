@@ -1,8 +1,8 @@
-import sys, json, os, tempfile, sqlite3
+import sys, tempfile
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from tools.database import db_connect, init_db, DB_PATH
+from tools.database import DB_PATH
 from tools.com_helpers import make_variant
 
 
@@ -32,7 +32,6 @@ def test_db_connect_creates_file():
 
 
 def test_init_db():
-    orig_path = DB_PATH
     test_path = Path(tempfile.gettempdir()) / "test_autocad_init.db"
     try:
         import tools.database as db_mod

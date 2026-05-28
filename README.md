@@ -57,7 +57,6 @@ python server.py
 | `draw_polyline` | 画多段线 |
 | `draw_rectangle` | 画矩形 |
 | `draw_text` | 添加文字 |
-| `draw_device_connection` | 绘制设备连接线 |
 | `create_block` | 从指定实体 handle 列表创建图块定义，可选插入块参照 |
 | `create_layer` | 创建或修改图层 |
 | `execute_command` | 执行 AutoCAD 命令并捕获命令行输出 |

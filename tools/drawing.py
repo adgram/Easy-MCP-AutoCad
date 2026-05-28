@@ -100,48 +100,6 @@ def draw_text(ctx: Context, text_string: str, insert_x: float, insert_y: float, 
     except Exception as e:
         return f"创建文字失败: {str(e)}"
 
-def draw_device_connection(ctx: Context, start_device: str, end_device: str, start_x: Optional[float] = None, start_y: Optional[float] = None, end_x: Optional[float] = None, end_y: Optional[float] = None, layer: Optional[str] = None) -> str:
-    """绘制设备之间的连接线"""
-    acad, doc, err = get_acad()
-    if err:
-        return err
-    try:
-        model_space = doc.ModelSpace
-        set_active_layer(doc, layer)
-
-        if start_x is None or start_y is None or end_x is None or end_y is None:
-            with db_connect() as conn:
-                cursor = conn.cursor()
-                cursor.execute(
-                    "SELECT properties FROM cad_elements WHERE type = 'CustomDevice' AND json_extract(properties, '$.label') = ?",
-                    (start_device,)
-                )
-                start_result = cursor.fetchone()
-                cursor.execute(
-                    "SELECT properties FROM cad_elements WHERE type = 'CustomDevice' AND json_extract(properties, '$.label') = ?",
-                    (end_device,)
-                )
-                end_result = cursor.fetchone()
-
-            if not start_result:
-                return f"未找到标签为 {start_device} 的设备"
-            if not end_result:
-                return f"未找到标签为 {end_device} 的设备"
-
-            start_props = json.loads(start_result[0])
-            end_props = json.loads(end_result[0])
-            start_x = start_props["position"][0] - 5
-            start_y = start_props["position"][1]
-            end_x = end_props["position"][0] - 5
-            end_y = end_props["position"][1]
-
-        line1 = model_space.AddLine(make_variant([start_x, start_y, 0]), make_variant([start_x - 10, start_y, 0]))
-        line2 = model_space.AddLine(make_variant([start_x - 10, start_y, 0]), make_variant([start_x - 10, end_y, 0]))
-        line3 = model_space.AddLine(make_variant([start_x - 10, end_y, 0]), make_variant([end_x, end_y, 0]))
-        return f"已创建从 {start_device} 到 {end_device} 的连接线"
-    except Exception as e:
-        return f"创建连接线失败: {str(e)}"
-
 def create_layer(ctx: Context, name: str, color_index: int = 7) -> str:
     """创建或修改图层"""
     acad, doc, err = get_acad()

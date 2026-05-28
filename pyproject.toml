@@ -1,5 +1,5 @@
 [project]
-name = "autocad-mcp-server"
+name = "easy_mcp_autocad"
 version = "0.2.0"
 description = "AutoCAD MCP Server for AI-driven CAD operations"
 readme = "README.md"
