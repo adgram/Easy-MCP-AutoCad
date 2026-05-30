@@ -33,19 +33,21 @@ python server.py
 
 ### 集成 opencode
 
-编辑 `~/.config/opencode/opencode.jsonc`：
+在项目根目录创建 `.opencode/opencode.jsonc`：
 
 ```json
 {
   "mcp": {
     "autocad": {
       "type": "local",
-      "command": ["path/to/venv/Scripts/python.exe", "path/to/server.py"],
+      "command": ["path/to/venv/Scripts/autocad-mcp-server.bat"],
       "enabled": true
     }
   }
 }
 ```
+
+> 建议使用项目级配置而非全局配置，避免 MCP 服务器污染其他项目上下文。
 
 ## 可用工具
 
