@@ -1,7 +1,8 @@
 import sqlite3
+from pathlib import Path
 from contextlib import contextmanager
 
-DB_PATH = "autocad_data.db"
+DB_PATH = str(Path(__file__).parent.parent / "autocad_data.db")
 
 
 @contextmanager
