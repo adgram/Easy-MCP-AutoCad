@@ -1,8 +1,18 @@
+import os
 import sqlite3
 from pathlib import Path
 from contextlib import contextmanager
 
-DB_PATH = str(Path(__file__).parent.parent / "autocad_data.db")
+_DEFAULT_DB = str(Path(__file__).parent.parent / "autocad_data.db")
+_CWD_DB = str(Path(os.getcwd()) / "autocad_data.db")
+
+def _get_db_path():
+    """项目级配置（有 .opencode 目录）时用 CWD，否则用包目录"""
+    if (Path(os.getcwd()) / ".opencode").exists():
+        return _CWD_DB
+    return _DEFAULT_DB
+
+DB_PATH = _get_db_path()
 
 
 @contextmanager
